@@ -8,6 +8,34 @@
 
 #define path_to_your_common_file "tmp.txt"
 
+int isStringInBuffer(char * line, char **buffer, int index){
+    int i;
+    for(i = 0; i < index; i++){
+        if(strcmp(line,buffer[i]) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+void writeInLibrary(char **buffer, int index){
+    int i;
+    FILE *output_file = fopen("dicionario.txt", "rw");
+    if (output_file == NULL)
+    {
+        fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
+
+    }
+    
+
+    /* read file content */
+    for(i = 0; i < index; i++){
+       fprintf(output_file,"%s",buffer[i]);
+    }
+
+    /* When you finish with the file, close it */
+    fclose(output_file);
+}
+
 int main(int argc, char **argv){
     DIR* FD;
     struct dirent* in_file;
@@ -57,7 +85,6 @@ int main(int argc, char **argv){
         if (entry_file == NULL)
         {
             fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-            fclose(common_file);
 
             return 1;
         }
@@ -68,10 +95,11 @@ int main(int argc, char **argv){
         while ((read = getline(&line, &len, entry_file)) != -1) {
             if(index == 10 * realloc_time){
                 realloc_time ++;
-                buffer =(char **) realloc(buffer, 10 * realloc_time);
+                buffer =(char **) realloc(*buffer, 10 * realloc_time);
             }
-            buffer[index] = malloc(sizeof(line));
-            strcpy(buffer[index],line);
+            buffer[index] = malloc(strlen(line) * sizeof(char));
+           // if(isStringInBuffer(line, buffer, index))
+                strcpy(buffer[index],line);
             printf("%s",buffer[index]);
             index ++;
         }
@@ -80,6 +108,8 @@ int main(int argc, char **argv){
         fclose(entry_file);
         free(path);
     }
+    
+    //writeInLibrary(buffer,index);
 
     /* Don't forget to close common file before leaving */
     fclose(common_file);
