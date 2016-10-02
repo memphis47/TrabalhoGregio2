@@ -10,10 +10,14 @@
 
 int isStringInBuffer(char * line, char **buffer, int index){
     int i;
+    printf("Line: %s",line);
     for(i = 0; i < index; i++){
+        
+        printf("Buffer: %s",buffer[index]);
         if(strcmp(line,buffer[i]) == 0)
             return 0;
     }
+    printf("Returning true\n");
     return 1;
 }
 
@@ -98,9 +102,9 @@ int main(int argc, char **argv){
                 buffer =(char **) realloc(*buffer, 10 * realloc_time);
             }
             buffer[index] = malloc(strlen(line) * sizeof(char));
-           // if(isStringInBuffer(line, buffer, index))
+            if(isStringInBuffer(line, buffer, index))
                 strcpy(buffer[index],line);
-            printf("%s",buffer[index]);
+            
             index ++;
         }
 
