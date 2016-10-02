@@ -8,32 +8,30 @@
 
 #define path_to_your_common_file "tmp.txt"
 
-int isStringInBuffer(char * line, char **buffer, int index){
+int isStringInBuffer(char *line, char **buffer, int index){
     int i;
-    printf("Line: %s",line);
     for(i = 0; i < index; i++){
-        
-        printf("Buffer: %s",buffer[index]);
         if(strcmp(line,buffer[i]) == 0)
             return 0;
     }
-    printf("Returning true\n");
     return 1;
 }
 
 void writeInLibrary(char **buffer, int index){
     int i;
-    FILE *output_file = fopen("dicionario.txt", "rw");
+    FILE *output_file = fopen("dicionario.txt", "w+");
     if (output_file == NULL)
     {
         fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
 
     }
-    
 
     /* read file content */
     for(i = 0; i < index; i++){
-       fprintf(output_file,"%s",buffer[i]);
+        if(i+1 == index)
+            fprintf(output_file,"%s",buffer[i]);
+        else
+            fprintf(output_file,"%s\n",buffer[i]);
     }
 
     /* When you finish with the file, close it */
@@ -43,9 +41,9 @@ void writeInLibrary(char **buffer, int index){
 int main(int argc, char **argv){
     DIR* FD;
     struct dirent* in_file;
-    FILE    *common_file;
-    FILE    *entry_file;
-    char   *line;
+    FILE *common_file;
+    FILE *entry_file;
+    char *line;
     char **buffer;
     size_t len = 0;
     ssize_t read;
@@ -95,17 +93,18 @@ int main(int argc, char **argv){
         
 
         /* read file content */
-        printf("\nContent of file %s:\n", in_file->d_name);
         while ((read = getline(&line, &len, entry_file)) != -1) {
             if(index == 10 * realloc_time){
                 realloc_time ++;
-                buffer =(char **) realloc(*buffer, 10 * realloc_time);
+                buffer =(char **) realloc(buffer, (10 * realloc_time) * sizeof(* buffer));
             }
-            buffer[index] = malloc(strlen(line) * sizeof(char));
-            if(isStringInBuffer(line, buffer, index))
+            line[strcspn(line, "\n")] = 0;
+            if(isStringInBuffer(line, buffer, index)){
+                buffer[index] = malloc(strlen(line) * sizeof(char));
                 strcpy(buffer[index],line);
+                index ++;
+            }
             
-            index ++;
         }
 
         /* When you finish with the file, close it */
@@ -113,7 +112,7 @@ int main(int argc, char **argv){
         free(path);
     }
     
-    //writeInLibrary(buffer,index);
+    writeInLibrary(buffer,index);
 
     /* Don't forget to close common file before leaving */
     fclose(common_file);
