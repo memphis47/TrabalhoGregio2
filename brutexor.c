@@ -46,12 +46,12 @@ char retriveChar(int value){
         character = 48 + value;
     }
     // valores de A-Z
-    else if(value >= 10 && value < 37){
+    else if(value >= 10 && value < 36){
         character = 65 + (value - 10);
     }
     // valores de a-z
-    else if(value >= 37 && value < 63){
-        character = 97 + (value - 37);
+    else if(value >= 36 && value < 62){
+        character = 97 + (value - 36);
     }
         
     return character;
@@ -72,77 +72,64 @@ char return_char(int value,int * size){
     return '\0';
 }
 
+void append_char_function(char append_char, char *word, int *i){
+    if(append_char != '\0'){
+        word[(*i)] = append_char;
+        (*i)++;
+    }
+}
+
 int findWord(){
     int size = 0;
     int first, second, third, fourth, fifth, sixth, seventh, eighth;
     int second_flag, third_flag, fourth_flag, fifth_flag, sixth_flag, seventh_flag, eighth_flag;
     char first_char, second_char, third_char, fourth_char, fifth_char, sixth_char, seventh_char, eighth_char;
     int word_index = 0;
-    char *words;
+    char *word;
     
-    for(first = 0; first <= 63; first ++){
-        first_char = return_char(first, &size);
+    for(first = 0; first <= 62; first ++){
+        first_char = return_char(first - 1, &size);
         
-        for(second = return_flag(first); second <= 63; second ++){
-            second_char = return_char(second, &size);
+        for(second = return_flag(first); second <= 62; second ++){
+            second_char = return_char(second - 1, &size);
             
-            for(third = return_flag(second); third <= 63; third ++){
-                third_char = return_char(third, &size);
+            for(third = return_flag(second); third <= 62; third ++){
+                third_char = return_char(third - 1, &size);
                 
-                for(fourth = return_flag(third); fourth <= 63; fourth ++){
-                    fourth_char = return_char(fourth, &size);
+                for(fourth = return_flag(third); fourth <= 62; fourth ++){
+                    fourth_char = return_char(fourth - 1, &size);
                     
-                    for(fifth = return_flag(fourth); fifth <= 63; fifth ++){
-                        fifth_char = return_char(fifth, &size);
+                    for(fifth = return_flag(fourth); fifth <= 62; fifth ++){
+                        fifth_char = return_char(fifth - 1, &size);
                         
-                        for(sixth = return_flag(fifth); sixth <= 63; sixth ++){
-                            sixth_char = return_char(sixth, &size);
+                        for(sixth = return_flag(fifth); sixth <= 62; sixth ++){
+                            sixth_char = return_char(sixth - 1, &size);
                             
-                            for(seventh = return_flag(sixth); seventh <= 63; seventh ++){
-                                seventh_char = return_char(seventh, &size);
+                            for(seventh = return_flag(sixth); seventh <= 62; seventh ++){
+                                seventh_char = return_char(seventh - 1, &size);
                                 
-                                for(eighth = 0; eighth < 63; eighth ++){
+                                for(eighth = 0; eighth < 62; eighth ++){
                                     eighth_char = retriveChar(eighth);
-                                    words = malloc (size + 2);
+                                    word = malloc (size + 2);
                                     
                                     int i = 0;
-                                    if(first_char != '\0'){
-                                        words[i] = first_char;
-                                        i++;
-                                    }
-                                    if(second_char != '\0'){
-                                        words[i] = second_char;
-                                        i++;
-                                    }
-                                    if(third_char != '\0'){
-                                        words[i] = third_char;
-                                        i++;
-                                    }
-                                    if(fourth_char != '\0'){
-                                        words[i] = fourth_char;
-                                        i++;
-                                    }
-                                    if(fifth_char != '\0'){
-                                        words[i] = fifth_char;
-                                        i++;
-                                    }
-                                    if(sixth_char != '\0'){
-                                        words[i] = sixth_char;
-                                        i++;
-                                    }
-                                    if(seventh_char != '\0'){
-                                        words[i] = seventh_char;
-                                        i++;
-                                    }
-                                    words[i] = eighth_char;
-                                    i++;
-                                    words[i] = '\0';
                                     
-                                    printf("String: %s\n", words);
-                                    if(strcmp(str2md5(words, strlen(words)),MD5) == 0)
+                                    append_char_function(first_char, word, &i);
+                                    append_char_function(second_char, word, &i);
+                                    append_char_function(third_char, word, &i);
+                                    append_char_function(fourth_char, word, &i);
+                                    append_char_function(fifth_char, word, &i);
+                                    append_char_function(sixth_char, word, &i);
+                                    append_char_function(seventh_char, word, &i);
+                                    word[i] = eighth_char;
+                                    i++;
+                                    word[i] = '\0';
+                                    
+                                    printf("String: %s\n", word);
+                                    if(strcmp(str2md5(word, strlen(word)),MD5) == 0)
                                         return 1;
                                     size = 0;
-                                    free(words);
+                                    free(word);
                                 }
                             }
                         }
