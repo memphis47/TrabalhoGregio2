@@ -11,11 +11,10 @@
 
 //http://stackoverflow.com/a/8389763
 //gcc brutexor.c -o brutextor -lcrypto -lssl
-char *str2md5(const char *str, int length) {
+void str2md5(const char *str, char *out, int length) {
     int n;
     MD5_CTX c;
     unsigned char digest[16];
-    char *out = (char*)malloc(33);
 
     MD5_Init(&c);
 
@@ -34,8 +33,6 @@ char *str2md5(const char *str, int length) {
     for (n = 0; n < 16; ++n) {
         snprintf(&(out[n*2]), 16*3, "%02x", (unsigned int)digest[n]);
     }
-
-    return out;
 }
 
 char retriveChar(int value){
@@ -67,7 +64,7 @@ int return_flag(int value){
 char return_char(int value,int * size){
     if(value > 0){
         size ++;
-        return retriveChar(value);
+        return retriveChar(value - 1);
     }
     return '\0';
 }
@@ -79,34 +76,35 @@ void append_char_function(char append_char, char *word, int *i){
     }
 }
 
-int findWord(){
+char * findWord(){
     int size = 0;
     int first, second, third, fourth, fifth, sixth, seventh, eighth;
     int second_flag, third_flag, fourth_flag, fifth_flag, sixth_flag, seventh_flag, eighth_flag;
     char first_char, second_char, third_char, fourth_char, fifth_char, sixth_char, seventh_char, eighth_char;
     int word_index = 0;
     char *word;
+	char buffer[33];
     
-    for(first = 0; first <= 62; first ++){
-        first_char = return_char(first - 1, &size);
+	for(first = 0; first <= 62; first ++){
+        first_char = return_char(first, &size);
         
         for(second = return_flag(first); second <= 62; second ++){
-            second_char = return_char(second - 1, &size);
+            second_char = return_char(second, &size);
             
             for(third = return_flag(second); third <= 62; third ++){
-                third_char = return_char(third - 1, &size);
+                third_char = return_char(third, &size);
                 
                 for(fourth = return_flag(third); fourth <= 62; fourth ++){
-                    fourth_char = return_char(fourth - 1, &size);
+                    fourth_char = return_char(fourth, &size);
                     
                     for(fifth = return_flag(fourth); fifth <= 62; fifth ++){
-                        fifth_char = return_char(fifth - 1, &size);
+                        fifth_char = return_char(fifth, &size);
                         
                         for(sixth = return_flag(fifth); sixth <= 62; sixth ++){
-                            sixth_char = return_char(sixth - 1, &size);
+                            sixth_char = return_char(sixth , &size);
                             
                             for(seventh = return_flag(sixth); seventh <= 62; seventh ++){
-                                seventh_char = return_char(seventh - 1, &size);
+                                seventh_char = return_char(seventh, &size);
                                 
                                 for(eighth = 0; eighth < 62; eighth ++){
                                     eighth_char = retriveChar(eighth);
@@ -124,10 +122,9 @@ int findWord(){
                                     word[i] = eighth_char;
                                     i++;
                                     word[i] = '\0';
-                                    
-                                    printf("String: %s\n", word);
-                                    if(strcmp(str2md5(word, strlen(word)),MD5) == 0)
-                                        return 1;
+ 									str2md5(word,buffer, strlen(word));
+                                    if(strcmp(buffer, MD5) == 0)
+                                        return word;
                                     size = 0;
                                     free(word);
                                 }
@@ -138,11 +135,13 @@ int findWord(){
             }
         }   
     }
+	return NULL;
 }
 
 int main(int argc, char **argv){
-    if(findWord())
-        printf("Achei !");
+	char *result = findWord();    
+	if(result != NULL)
+        printf("Achei !\n Palavra: %s\n", result);
     else
         printf("EPA, nao achei!");
 }
