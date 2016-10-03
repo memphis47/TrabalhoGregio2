@@ -8,6 +8,7 @@
 #include <openssl/md5.h>
 
 #define MD5 "8d7b356eae43adcd6ad3ee124c3dcf1e"
+#define CADEIA "0b3430202f27052205292128222619342322272d"
 
 //http://stackoverflow.com/a/8389763
 //gcc brutexor.c -o brutextor -lcrypto -lssl
@@ -138,10 +139,56 @@ char * findWord(){
 	return NULL;
 }
 
+//http://stackoverflow.com/a/5403170
+int hex_to_int(char c){
+        int first = c / 16 - 3;
+        int second = c % 16;
+        int result = first*10 + second;
+        if(result > 9) result--;
+        return result;
+}
+
+int hex_to_ascii(char c, char d){
+        int high = hex_to_int(c) * 16;
+        int low = hex_to_int(d);
+        return high+low;
+}
+
+void returnASCIIString(char *string){	
+	int index = 0;
+	int i;
+	char buf = 0;
+	for(i = 0; i < 41; i++){
+        if(i % 2 != 0){
+                string[index] = hex_to_ascii(buf, CADEIA[i]);
+				index++;
+        }else{
+                buf = CADEIA[i];
+        }
+	}		
+}
+
+char * makeXOR(char *key){
+	char *string = malloc(21);
+	string[21] = '\0';
+	returnASCIIString(string);
+	static char xor[42];
+	int i; 
+	int j;
+	for(i = 0; i < 21; i++){
+		xor[i] = (char)(string[i] ^ key[j]);
+		if(j == strlen(key))
+			j = 0;
+		else
+			j++;			
+	}
+	return xor;
+}
+
 int main(int argc, char **argv){
 	char *result = findWord();    
 	if(result != NULL)
-        printf("Achei !\n Palavra: %s\n", result);
+        printf("Achei !\n Palavra: %s\n e o xor é %s\n", result, makeXOR(result));
     else
         printf("EPA, nao achei!");
 }
