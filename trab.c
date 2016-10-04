@@ -6,32 +6,29 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define path_to_your_common_file "tmp.txt"
-
-int isStringInBuffer(char *line, char **buffer, int index){
+int isStringInBuffer(char *str, char **buffer, int size){
     int i;
-    for(i = 0; i < index; i++){
-        if(strcmp(line,buffer[i]) == 0)
+    for(i = 0; i < size; i++){
+        if(strcmp(str, buffer[i]) == 0)
             return 0;
     }
     return 1;
 }
 
-void writeInLibrary(char **buffer, int index){
+void writeInLibrary(char **buffer, int size){
     int i;
-    FILE *output_file = fopen("dicionario.txt", "w+");
-    if (output_file == NULL)
-    {
-        fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
 
+    FILE *output_file = fopen("dicionario.txt", "w+");
+    if (output_file == NULL) {
+        fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
     }
 
     /* read file content */
-    for(i = 0; i < index; i++){
-        if(i+1 == index)
-            fprintf(output_file,"%s",buffer[i]);
+    for(i = 0; i < size; i++){
+        if (i+1 == size)
+            fprintf(output_file,"%s", buffer[i]);
         else
-            fprintf(output_file,"%s\n",buffer[i]);
+            fprintf(output_file, "%s\n", buffer[i]);
     }
 
     /* When you finish with the file, close it */
@@ -44,78 +41,64 @@ int main(int argc, char **argv){
     FILE *common_file;
     FILE *entry_file;
     char *line;
-    char **buffer;
     size_t len = 0;
     ssize_t read;
     int index = 0;
-    int realloc_time = 1;
-    /* Openiing common file for writing */
-    buffer =(char **) malloc(sizeof(char *) * 10);
-    common_file = fopen(path_to_your_common_file, "w");
-    if (common_file == NULL)
-    {
-        fprintf(stderr, "Error : Failed to open common_file - %s\n", strerror(errno));
-
-        return 1;
-    }
+    char **buffer = NULL;
+    int buffer_size = 0;
 
     /* Scanning the in directory */
-    if (NULL == (FD = opendir (argv[1]))) 
-    {
+    if (NULL == (FD = opendir (argv[1]))){
         fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
-        fclose(common_file);
-
         return 1;
     }
-    while ((in_file = readdir(FD))) 
-    {
+
+    while ((in_file = readdir(FD))){
         char *path = malloc(sizeof(argv[1]) + sizeof(in_file->d_name) + 1);
         /* On linux/Unix we don't want current and parent directories
          * On windows machine too, thanks Greg Hewgill
          */
         if (!strcmp (in_file->d_name, "."))
             continue;
-        if (!strcmp (in_file->d_name, ".."))    
+        if (!strcmp (in_file->d_name, ".."))
             continue;
         /* Open directory entry file for common operation */
-        
+
         //get the path of the file
         strcpy(path,argv[1]);
         strcat(path,in_file->d_name);
-        
-        entry_file = fopen(path, "rw");
-        if (entry_file == NULL)
-        {
-            fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
 
+        entry_file = fopen(path, "rw");
+        if (entry_file == NULL){
+            fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
             return 1;
         }
-        
 
         /* read file content */
-        while ((read = getline(&line, &len, entry_file)) != -1) {
-            if(index == 10 * realloc_time){
-                realloc_time ++;
-                buffer =(char **) realloc(buffer, (10 * realloc_time) * sizeof(* buffer));
+        while ((read = getline(&line, &len, entry_file)) != -1){
+            // if needed, allocate space for BUFFER_CHUNK_SIZE more strings
+            if (index >= buffer_size) {
+                buffer_size += 10;
+                buffer = (char**) realloc(buffer, buffer_size * sizeof(char*));
             }
+
+            // strip the line feed character
             line[strcspn(line, "\n")] = 0;
-            if(isStringInBuffer(line, buffer, index)){
-                buffer[index] = malloc(strlen(line) * sizeof(char));
-                strcpy(buffer[index],line);
-                index ++;
+
+            // if the string is in the
+            if (isStringInBuffer(line, buffer, index) != 0) {
+                buffer[index] = (char*) malloc((strlen(line) + 1) * sizeof(char));
+                strcpy(buffer[index], line);
+                index++;
             }
-            
         }
 
         /* When you finish with the file, close it */
         fclose(entry_file);
         free(path);
     }
-    
-    writeInLibrary(buffer,index);
 
-    /* Don't forget to close common file before leaving */
-    fclose(common_file);
+    writeInLibrary(buffer,index);
 
     return 0;
 }
