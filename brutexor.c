@@ -5,10 +5,12 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <regex.h>
 #include <openssl/md5.h>
 
 #define MD5 "8d7b356eae43adcd6ad3ee124c3dcf1e"
 #define CADEIA "0b3430202f27052205292128222619342322272d"
+#define REG_HEX "^[a-f]$|^[A-F]$"
 
 //http://stackoverflow.com/a/8389763
 //gcc brutexor.c -o brutextor -lcrypto -lssl
@@ -139,15 +141,52 @@ char * findWord(){
 	return NULL;
 }
 
-//http://stackoverflow.com/a/5403170
-int hex_to_int(char c){
-        int first = c / 16 - 3;
-        int second = c % 16;
-        int result = first*10 + second;
-        if(result > 9) result--;
-        return result;
+/**
+*   Função que faz a validação da entrada strValidate de acordo com o regex definido no pattern.
+**/
+int regexValidation(char *strValidate, char * pattern){
+    regex_t reg;
+
+    /* compila a ER passada em argv[1]
+     * em caso de erro, a função retorna diferente de zero */
+    if (regcomp(&reg , pattern, REG_EXTENDED|REG_NOSUB) != 0) {
+        fprintf(stderr,"erro regcomp\n");
+        exit(1);
+    }
+    /* tenta casar a ER compilada (&reg) com a entrada (argv[2])
+     * se a função regexec retornar 0 casou, caso contrário não */
+    if ((regexec(&reg, strValidate, 0, (regmatch_t *)NULL, 0)) == 0)
+        return 1;
+    else
+        return 0;
 }
 
+
+int hex_to_int(char c){
+	char str[2];
+	str[0] = c;
+	str[1] = '\0';
+	if(regexValidation(str,REG_HEX)){
+		if(c == 'a' || c == 'A')
+			return 10;
+		else if(c == 'b' || c == 'B')
+			return 11;
+		else if(c == 'c' || c == 'C')
+			return 12;
+		else if(c == 'd' || c == 'D')
+			return 13;
+		else if(c == 'e' || c == 'E')
+			return 14;
+		else if(c == 'f' || c == 'F')
+			return 15;
+		else
+			return 0;
+	}
+	else
+		 return (int) strtol(str, NULL, 10);
+}
+
+//http://stackoverflow.com/a/5403170
 int hex_to_ascii(char c, char d){
         int high = hex_to_int(c) * 16;
         int low = hex_to_int(d);
@@ -169,18 +208,16 @@ void returnASCIIString(char *string){
 }
 
 char * makeXOR(char *key){
-	char *string = malloc(21);
-	string[21] = '\0';
+	char *string = malloc(20);
 	returnASCIIString(string);
 	static char xor[42];
 	int i; 
-	int j;
-	for(i = 0; i < 21; i++){
+	int j = 0;
+	for(i = 0; i < 20; i++){
 		xor[i] = (char)(string[i] ^ key[j]);
+		j++;		
 		if(j == strlen(key))
-			j = 0;
-		else
-			j++;			
+			j = 0;			
 	}
 	return xor;
 }
@@ -188,7 +225,7 @@ char * makeXOR(char *key){
 int main(int argc, char **argv){
 	char *result = findWord();    
 	if(result != NULL)
-        printf("Achei !\n Palavra: %s\n e o xor é %s\n", result, makeXOR(result));
+        printf("A Dica é:\n %s\n", makeXOR("FACIL"));
     else
-        printf("EPA, nao achei!");
+        printf("\nEPA, nao achei!\n");
 }
