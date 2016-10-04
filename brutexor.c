@@ -225,7 +225,7 @@ char * makeXOR(char *key){
 int main(int argc, char **argv){
 	char *result = findWord();    
 	if(result != NULL)
-        printf("A Dica é:\n %s\n", makeXOR("FACIL"));
+        printf("A Dica é:\n %s\n", makeXOR(result));
     else
         printf("\nEPA, nao achei!\n");
 }
