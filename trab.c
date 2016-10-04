@@ -5,52 +5,50 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #define path_to_your_common_file "tmp.txt"
 
-int isStringInBuffer(char *line, char **buffer, int index){
-    int i;
-    for(i = 0; i < index; i++){
-        if(strcmp(line,buffer[i]) == 0)
-            return 0;
-    }
-    return 1;
-}
+int isNewString(char *line){
+	char *line_output;	
+	size_t len_output = 0;
+    ssize_t read_output;
+    FILE *output_file_read = fopen("dicionario.lst", "r");
+	if (output_file_read == NULL)
+	{
+		fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
 
-void writeInLibrary(char **buffer, int index){
-    int i;
-    FILE *output_file = fopen("dicionario.txt", "w+");
-    if (output_file == NULL)
-    {
-        fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
-
-    }
-
-    /* read file content */
-    for(i = 0; i < index; i++){
-        if(i+1 == index)
-            fprintf(output_file,"%s",buffer[i]);
-        else
-            fprintf(output_file,"%s\n",buffer[i]);
-    }
-
-    /* When you finish with the file, close it */
-    fclose(output_file);
+	}
+	if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n")==0)
+			printf("Linha no read: %s\n",line);
+	while ((read_output = getline(&line_output, &len_output, output_file_read)) != -1){
+		if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n")==0)
+			printf("Linha: %s\nLinha lida do arquivo: %s\n",line,line_output);
+		if(strcmp(line,line_output)==0){
+			fclose(output_file_read);			
+			return 0; 
+		}
+	}
+    fclose(output_file_read);
+	return 1;
 }
 
 int main(int argc, char **argv){
     DIR* FD;
+	struct timespec ts;
     struct dirent* in_file;
     FILE *common_file;
     FILE *entry_file;
     char *line;
-    char **buffer;
     size_t len = 0;
     ssize_t read;
     int index = 0;
     int realloc_time = 1;
+
+	ts.tv_sec = 0;
+    ts.tv_nsec = 50000000;
     /* Openiing common file for writing */
-    buffer =(char **) malloc(sizeof(char *) * 10);
     common_file = fopen(path_to_your_common_file, "w");
     if (common_file == NULL)
     {
@@ -67,6 +65,16 @@ int main(int argc, char **argv){
 
         return 1;
     }
+
+	FILE *output_file_write = fopen("dicionario.lst", "w+");
+    if (output_file_write == NULL)
+    {
+        fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
+
+    }
+
+	
+
     while ((in_file = readdir(FD))) 
     {
         char *path = malloc(sizeof(argv[1]) + sizeof(in_file->d_name) + 1);
@@ -94,16 +102,16 @@ int main(int argc, char **argv){
 
         /* read file content */
         while ((read = getline(&line, &len, entry_file)) != -1) {
-            if(index == 10 * realloc_time){
-                realloc_time ++;
-                buffer =(char **) realloc(buffer, (10 * realloc_time) * sizeof(* buffer));
-            }
-            line[strcspn(line, "\n")] = 0;
-            if(isStringInBuffer(line, buffer, index)){
-                buffer[index] = malloc(strlen(line) * sizeof(char));
-                strcpy(buffer[index],line);
-                index ++;
-            }
+			int hasline = 0;
+			if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n") == 0)
+				printf("Linha: %s\n",line);
+			if(strcmp(line,"\n") != 0 && isNewString(line)){
+	            line[strcspn(line, "\n")] = 0;
+				fprintf(output_file_write,"%s\n",line);
+				int fd = fileno(output_file_write);   
+			    int ret = fsync(fd);
+				sleep(1);
+			}
             
         }
 
@@ -111,9 +119,7 @@ int main(int argc, char **argv){
         fclose(entry_file);
         free(path);
     }
-    
-    writeInLibrary(buffer,index);
-
+    fclose(output_file_write);
     /* Don't forget to close common file before leaving */
     fclose(common_file);
 
