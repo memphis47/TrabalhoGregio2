@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#define SEPARATORS " ,;.-"
+
 int isStringInBuffer(char *str, char **buffer, int size){
     int i;
     for(i = 0; i < size; i++){
@@ -46,6 +48,7 @@ int main(int argc, char **argv){
     int index = 0;
     char **buffer = NULL;
     int buffer_size = 0;
+    char *word;
 
     /* Scanning the in directory */
     if (NULL == (FD = opendir (argv[1]))){
@@ -78,18 +81,20 @@ int main(int argc, char **argv){
         while ((read = getline(&line, &len, entry_file)) != -1){
             // if needed, allocate space for BUFFER_CHUNK_SIZE more strings
             if (index >= buffer_size) {
-                buffer_size += 10;
+                buffer_size += 64 * 1024;
                 buffer = (char**) realloc(buffer, buffer_size * sizeof(char*));
             }
 
             // strip the line feed character
             line[strcspn(line, "\n")] = 0;
 
-            // if the string is in the
-            if (isStringInBuffer(line, buffer, index) != 0) {
-                buffer[index] = (char*) malloc((strlen(line) + 1) * sizeof(char));
-                strcpy(buffer[index], line);
-                index++;
+            for (word = strtok(line, SEPARATORS); word != NULL; word = strtok(NULL, SEPARATORS)) {
+                // if the string is in the bufer
+                if (isStringInBuffer(word, buffer, index) != 0) {
+                    buffer[index] = (char*) malloc((strlen(word) + 1) * sizeof(char));
+                    strcpy(buffer[index], word);
+                    index++;
+                }
             }
         }
 
