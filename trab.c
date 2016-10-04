@@ -99,8 +99,6 @@ int main(int argc, char **argv){
         /* read file content */
         while ((read = getline(&line, &len, entry_file)) != -1) {
 			int hasline = 0;
-			if(strcmp(line,"Que país é esse?\n") == 0)
-				printf("Linha: %s\n",line);
 			if(strcmp(line,"\n") != 0 && isNewString(line)){
 	            line[strcspn(line, "\n")] = 0;
 				fprintf(output_file_write,"%s\n",line);
