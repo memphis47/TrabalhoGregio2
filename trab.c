@@ -20,11 +20,7 @@ int isNewString(char *line){
 		fprintf(stderr, "Error : Failed to open entry file - %s\n", strerror(errno));
 
 	}
-	if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n")==0)
-			printf("Linha no read: %s\n",line);
 	while ((read_output = getline(&line_output, &len_output, output_file_read)) != -1){
-		if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n")==0)
-			printf("Linha: %s\nLinha lida do arquivo: %s\n",line,line_output);
 		if(strcmp(line,line_output)==0){
 			fclose(output_file_read);			
 			return 0; 
@@ -103,14 +99,14 @@ int main(int argc, char **argv){
         /* read file content */
         while ((read = getline(&line, &len, entry_file)) != -1) {
 			int hasline = 0;
-			if(strcmp(line,"Não, não, não venha pra cá, que eu não quero mais saber de você\n") == 0)
+			if(strcmp(line,"Que país é esse?\n") == 0)
 				printf("Linha: %s\n",line);
 			if(strcmp(line,"\n") != 0 && isNewString(line)){
 	            line[strcspn(line, "\n")] = 0;
 				fprintf(output_file_write,"%s\n",line);
+                fflush(output_file_write);
 				int fd = fileno(output_file_write);   
 			    int ret = fsync(fd);
-				sleep(1);
 			}
             
         }
