@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define SEPARATORS " ,;.-\":%?!()"
+
+#define SEPARATORS " ,;.\":?!()"
+
 
 int isStringInBuffer(char *str, char **buffer, int size){
     int i;
