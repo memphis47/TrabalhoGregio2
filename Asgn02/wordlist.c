@@ -9,7 +9,7 @@
 
 #define SEPARATORS " ,;.\":?!()"
 
-
+// Verifica se a string str esta contida dentro do buffer
 int isStringInBuffer(char *str, char **buffer, int size){
     int i;
     for(i = 0; i < size; i++){
@@ -19,6 +19,7 @@ int isStringInBuffer(char *str, char **buffer, int size){
     return 1;
 }
 
+// Escreve o conteúdo do buffer dentro do arquivo dicionario.txt
 void writeInLibrary(char **buffer, int size){
     int i;
 
@@ -52,6 +53,7 @@ int main(int argc, char **argv){
     int buffer_size = 0;
     char *word;
 
+    //http://stackoverflow.com/a/11737506/2382100
     /* Scanning the in directory */
     if (NULL == (FD = opendir (argv[1]))){
         fprintf(stderr, "Error : Failed to open input directory - %s\n", strerror(errno));
